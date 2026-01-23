@@ -62,9 +62,12 @@
   },
   "dependencies": {
     "axios": "^1.13.1",
+    "compression": "^1.7.4",
     "dotenv": "^17.2.3",
     "emoji-name-map": "^2.0.3",
+    "express": "^5.2.1",
     "github-username-regex": "^1.0.0",
+    "redis": "^4.7.0",
     "word-wrap": "^1.2.5"
   },
   "lint-staged": {

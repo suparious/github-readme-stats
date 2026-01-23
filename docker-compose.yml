@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  redis:
+    container_name: stats-redis
+    image: valkey/valkey:7.2
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  app:
+    build: .
+    container_name: github-readme-stats
+    ports:
+      - "9000:9000"
+    environment:
+      - PAT_1=${PAT_1:-}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=9000
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:9000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Development mode with hot reload via nodemon
+  dev:
+    image: node:22-slim
+    container_name: github-readme-stats-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "9000:9000"
+    environment:
+      - PAT_1=${PAT_1:-}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=9000
+      - NODE_ENV=development
+    command: >
+      sh -c "npm install && npx nodemon --watch . --ext js,json server.js"
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles:
+      - dev

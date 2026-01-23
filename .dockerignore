@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+LICENSE
+SECURITY.md
+CODE_OF_CONDUCT.md
+CLAUDE.md
+
+# Development
+.devcontainer
+.vscode
+.husky
+.nvmrc
+.eslintrc.json
+.prettierrc.json
+.prettierignore
+eslint.config.mjs
+
+# Tests
+tests/
+jest.*.js
+codecov.yml
+
+# Scripts
+scripts/
+
+# Vercel
+vercel.json
+.vercelignore
+
+# Local environment
+.env
+.env.*
+
+# Node
+node_modules
+npm-debug.log
+
+# Build artifacts
+coverage/
