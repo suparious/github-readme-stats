@@ -52,26 +52,27 @@ app.get("/healthz", (req, res) => {
 });
 
 // Readiness probe - checks Redis connectivity if configured
+// Always returns ready (200) - Redis is optional for caching
 app.get("/ready", async (req, res) => {
-  try {
-    const redisHealthy = await isRedisHealthy();
-    const status = {
-      status: "ready",
-      timestamp: new Date().toISOString(),
-      redis: process.env.REDIS_HOST
-        ? redisHealthy
-          ? "connected"
-          : "disconnected"
-        : "not configured",
-    };
-    res.json(status);
-  } catch (err) {
-    res.status(503).json({
-      status: "not ready",
-      timestamp: new Date().toISOString(),
-      error: err.message,
-    });
+  let redisStatus = "not configured";
+  if (process.env.REDIS_HOST) {
+    try {
+      // Timeout isRedisHealthy to prevent probe from hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), 2000)
+      );
+      const healthyPromise = isRedisHealthy();
+      const redisHealthy = await Promise.race([healthyPromise, timeoutPromise]).catch(() => false);
+      redisStatus = redisHealthy ? "connected" : "disconnected";
+    } catch {
+      redisStatus = "disconnected";
+    }
   }
+  res.json({
+    status: "ready",
+    timestamp: new Date().toISOString(),
+    redis: redisStatus,
+  });
 });
 
 app.get("/readyz", async (req, res) => {
